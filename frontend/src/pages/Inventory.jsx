@@ -139,13 +139,20 @@ export default function Inventory() {
     setSaving(true)
     try {
       const payload = {
-        ...formData,
-        stock: Number(formData.stock),
+        name: formData.name,
+        category: formData.category,
+        manufacturer: formData.manufacturer || null,
+        barcode: formData.barcode || null,
+        batchNo: formData.batchNo || null,
+        expiryDate: formData.expiryDate || null,
+        currentStock: Number(formData.stock),
         reorderLevel: Number(formData.reorderLevel),
         sellingPrice: Number(formData.sellingPrice),
         mrp: Number(formData.mrp),
         purchasePrice: Number(formData.purchasePrice),
-        gst: Number(formData.gst),
+        gstPercent: Number(formData.gst),
+        vendorId: formData.vendorId || null,
+        unit: formData.unit || 'strip',
       }
       await createProduct(payload)
       toast.success('Product added successfully')
@@ -164,15 +171,22 @@ export default function Inventory() {
     setSaving(true)
     try {
       const payload = {
-        ...formData,
-        stock: Number(formData.stock),
+        name: formData.name,
+        category: formData.category,
+        manufacturer: formData.manufacturer || null,
+        barcode: formData.barcode || null,
+        batchNo: formData.batchNo || null,
+        expiryDate: formData.expiryDate || null,
+        currentStock: Number(formData.stock),
         reorderLevel: Number(formData.reorderLevel),
         sellingPrice: Number(formData.sellingPrice),
         mrp: Number(formData.mrp),
         purchasePrice: Number(formData.purchasePrice),
-        gst: Number(formData.gst),
+        gstPercent: Number(formData.gst),
+        vendorId: formData.vendorId || null,
+        unit: formData.unit || 'strip',
       }
-      await updateProduct(editingProduct._id, payload)
+      await updateProduct(editingProduct.id, payload)
       toast.success('Product updated')
       setShowEditModal(false)
       setEditingProduct(null)
@@ -188,7 +202,7 @@ export default function Inventory() {
   const handleDelete = async (product) => {
     if (!window.confirm(`Delete "${product.name}"? This action cannot be undone.`)) return
     try {
-      await deleteProduct(product._id)
+      await deleteProduct(product.id)
       toast.success('Product deleted')
       fetchProducts()
     } catch (err) {
@@ -201,10 +215,10 @@ export default function Inventory() {
     setSaving(true)
     try {
       await stockAdjust({
-        productId: stockProduct._id,
+        productId: stockProduct.id,
         type: stockData.type,
         quantity: Number(stockData.qty),
-        reason: stockData.reason,
+        note: stockData.reason,
       })
       toast.success('Stock adjusted')
       setShowStockModal(false)
@@ -227,15 +241,17 @@ export default function Inventory() {
       barcode: product.barcode || '',
       batchNo: product.batchNo || '',
       expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
-      stock: product.stock || 0,
+      stock: product.currentStock || 0,
       reorderLevel: product.reorderLevel || 10,
       sellingPrice: product.sellingPrice || 0,
       mrp: product.mrp || 0,
       purchasePrice: product.purchasePrice || 0,
-      gst: product.gst || 18,
-      vendor: product.vendor || '',
-      location: product.location || '',
-      schedule: product.schedule || '',
+      gst: product.gstPercent || 12,
+      vendor: product.vendor?.name || '',
+      vendorId: product.vendorId || '',
+      unit: product.unit || 'strip',
+      location: '',
+      schedule: '',
     })
     setShowEditModal(true)
   }
@@ -275,18 +291,18 @@ export default function Inventory() {
       render: (v, row) => (
         <div>
           <p className="text-xs text-gray-300">{v || '-'}</p>
-          <p className={`text-xs ${daysUntilExpiry(row.expiryDate).status === 'expired' ? 'text-red-400' : 'text-gray-500'}`}>
+          <p className={`text-xs ${daysUntilExpiry(row.expiryDate)?.status === 'expired' ? 'text-red-400' : 'text-gray-500'}`}>
             {formatDate(row.expiryDate)}
           </p>
         </div>
       ),
     },
     {
-      key: 'stock',
+      key: 'currentStock',
       label: 'Stock',
       render: (v, row) => (
         <span className={`font-medium ${v <= 0 ? 'text-red-400' : v <= (row.reorderLevel || 10) ? 'text-orange-400' : 'text-gray-200'}`}>
-          {v || 0}
+          {v ?? 0}
         </span>
       ),
     },
@@ -309,12 +325,12 @@ export default function Inventory() {
       label: 'Vendor',
       render: (v, row) => (
         <span className="text-xs text-gray-400">
-          {v?.name || v || row.vendorName || '-'}
+          {v?.name || v || '-'}
         </span>
       ),
     },
     {
-      key: '_id',
+      key: 'id',
       label: 'Actions',
       render: (v, row) => (
         <div className="flex items-center gap-1">
