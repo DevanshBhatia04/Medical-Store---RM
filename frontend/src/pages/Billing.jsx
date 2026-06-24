@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { IconTrash, IconPlus, IconSearch, IconShoppingCart } from '@tabler/icons-react'
+import { IconTrash, IconPlus, IconSearch, IconShoppingCart, IconCamera } from '@tabler/icons-react'
 import ModalForm from '../components/ModalForm'
 import InvoiceReceipt from '../components/InvoiceReceipt'
 import { useInventoryStore } from '../store/inventoryStore'
@@ -24,6 +24,8 @@ export default function Billing() {
   const [generatedInvoice, setGeneratedInvoice] = useState(null)
   const searchRef = useRef(null)
   const dropdownRef = useRef(null)
+  const barcodeInputRef = useRef(null)
+  const cameraInputRef = useRef(null)
 
   const searchTimeout = useRef(null)
 
@@ -73,6 +75,14 @@ export default function Billing() {
     setSearchQuery('')
     setShowDropdown(false)
     if (searchRef.current) searchRef.current.focus()
+  }
+
+  const handleCameraClick = () => {
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      cameraInputRef.current?.click()
+    } else {
+      barcodeInputRef.current?.focus()
+    }
   }
 
   useEffect(() => {
@@ -156,7 +166,7 @@ export default function Billing() {
 
       <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
         <div className="flex-1 flex flex-col gap-4 min-h-0">
-          <div className="glass rounded-2xl p-4 space-y-3">
+          <div className="glass rounded-2xl p-4 space-y-3 overflow-visible">
             <div className="relative" ref={searchRef}>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -172,13 +182,32 @@ export default function Billing() {
                   />
                 </div>
                 <input
+                  ref={barcodeInputRef}
                   type="text"
                   onKeyDown={handleBarcodeScan}
                   placeholder="Scan barcode..."
-                  className="input-glass w-48 hidden sm:block"
+                  className="input-glass w-36 hidden sm:block"
                   autoComplete="off"
                 />
+                <button
+                  type="button"
+                  onClick={handleCameraClick}
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200"
+                  title="Scan with camera"
+                >
+                  <IconCamera size={20} />
+                </button>
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  id="camera-input"
+                  className="hidden"
+                  onChange={() => barcodeInputRef.current?.focus()}
+                />
               </div>
+              <p className="text-xs text-gray-500 mt-2">Search by name or scan barcode. Tap <IconCamera size={12} className="inline" /> to use camera on mobile.</p>
               {showDropdown && searchResults.length > 0 && (
                 <div
                   ref={dropdownRef}

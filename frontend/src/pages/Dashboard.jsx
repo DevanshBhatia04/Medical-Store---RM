@@ -26,7 +26,8 @@ export default function Dashboard() {
       try {
         setLoading(true)
         const res = await api.get('/reports/dashboard-summary')
-        setData(res.data || res)
+        const responseData = res.data?.data || res.data || res
+        setData(responseData)
       } catch (err) {
         setError(err.message)
       } finally {

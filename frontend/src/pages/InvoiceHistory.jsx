@@ -49,7 +49,7 @@ export default function InvoiceHistory() {
   const handleViewInvoice = async (row) => {
     setViewLoading(true)
     try {
-      const invoice = await getInvoice(row._id)
+      const invoice = await getInvoice(row.id || row._id)
       setViewInvoice(invoice.invoice || invoice)
     } catch (err) {
       toast.error(err.message)
@@ -62,7 +62,7 @@ export default function InvoiceHistory() {
 
   const columns = [
     { key: 'invoiceNo', label: 'Invoice No', render: (v, row) => (
-      <span className="text-primary-400 font-mono text-xs">{v || row._id?.slice(-8).toUpperCase()}</span>
+      <span className="text-primary-400 font-mono text-xs">{v || (row.id || row._id)?.slice(-8).toUpperCase()}</span>
     )},
     { key: 'createdAt', label: 'Date', render: (v) => <span className="text-xs text-gray-400">{formatDateTime(v)}</span> },
     { key: 'customerName', label: 'Customer', render: (v) => v || 'Walk-in' },

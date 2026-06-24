@@ -36,7 +36,7 @@ export default function OOSAlerts() {
     setExporting(true)
     try {
       const blob = await exportExcel()
-      const url = window.URL.createObjectURL(new Blob([blob]))
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
       const a = document.createElement('a')
       a.href = url
       a.download = `reorder-sheet-${new Date().toISOString().split('T')[0]}.xlsx`
