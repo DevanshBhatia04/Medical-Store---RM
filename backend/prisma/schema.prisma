@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(OWNER)
+  createdAt DateTime  @default(now())
+  invoices  Invoice[]
+}
+
+enum Role {
+  OWNER
+  PHARMACIST
+  CASHIER
+}
+
+model Vendor {
+  id        Int       @id @default(autoincrement())
+  name      String
+  contact   String?
+  address   String?
+  email     String?
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id             Int           @id @default(autoincrement())
+  name           String
+  barcode        String?       @unique
+  category       Category      @default(TABLET)
+  manufacturer   String?
+  batchNo        String?
+  expiryDate     DateTime?
+  purchasePrice  Float         @default(0)
+  sellingPrice   Float         @default(0)
+  mrp            Float         @default(0)
+  gstPercent     Float         @default(12)
+  currentStock   Int           @default(0)
+  reorderLevel   Int           @default(10)
+  unit           String        @default("strip")
+  vendorId       Int?
+  vendor         Vendor?       @relation(fields: [vendorId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  invoiceItems   InvoiceItem[]
+  oosLogs        OOSLog[]
+  stockLogs      StockLog[]
+}
+
+enum Category {
+  TABLET
+  CAPSULE
+  SYRUP
+  INJECTION
+  OINTMENT
+  COSMETIC
+  SURGICAL
+  DROPS
+  POWDER
+  OTHER
+}
+
+model Invoice {
+  id             Int           @id @default(autoincrement())
+  invoiceNo      String        @unique
+  date           DateTime      @default(now())
+  customerName   String        @default("Walk-in")
+  customerPhone  String?
+  subtotal       Float
+  gstTotal       Float
+  discountAmount Float         @default(0)
+  total          Float
+  paymentMode    PaymentMode   @default(CASH)
+  userId         Int
+  user           User          @relation(fields: [userId], references: [id])
+  items          InvoiceItem[]
+  createdAt      DateTime      @default(now())
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CARD
+  CREDIT
+}
+
+model InvoiceItem {
+  id          Int     @id @default(autoincrement())
+  invoiceId   Int
+  invoice     Invoice @relation(fields: [invoiceId], references: [id])
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id])
+  productName String
+  qty         Int
+  price       Float
+  gstPercent  Float
+  lineTotal   Float
+}
+
+model OOSLog {
+  id          Int       @id @default(autoincrement())
+  productId   Int
+  product     Product   @relation(fields: [productId], references: [id])
+  stockAtTime Int
+  flaggedAt   DateTime  @default(now())
+  resolved    Boolean   @default(false)
+  resolvedAt  DateTime?
+}
+
+model StockLog {
+  id        Int          @id @default(autoincrement())
+  productId Int
+  product   Product      @relation(fields: [productId], references: [id])
+  type      StockLogType
+  quantity  Int
+  note      String?
+  createdAt DateTime     @default(now())
+}
+
+enum StockLogType {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+  RETURN
+  DAMAGE
+}
+
+model Settings {
+  id                Int    @id @default(autoincrement())
+  storeName         String @default("Raman Medicos")
+  storeAddress      String @default("")
+  storeGst          String @default("")
+  storePhone        String @default("")
+  ownerName         String @default("Owner")
+  expiryAlertDays   Int    @default(90)
+  defaultReorderLevel Int  @default(10)
+}
