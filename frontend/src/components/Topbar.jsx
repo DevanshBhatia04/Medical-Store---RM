@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { IconMenu2, IconBell, IconLogout, IconHeartbeat } from '@tabler/icons-react'
+import { IconMenu2, IconBell, IconLogout, IconHeartbeat, IconSun, IconMoon } from '@tabler/icons-react'
 import { useAuthStore } from '../store/authStore'
+import { useTheme } from '../context/ThemeContext'
 import { getCurrent } from '../api/oos'
 
 export default function Topbar({ onMenuClick }) {
   const { user, logout } = useAuthStore()
+  const { theme, toggleTheme } = useTheme()
   const [oosCount, setOosCount] = useState(0)
 
   useEffect(() => {
@@ -52,6 +54,14 @@ export default function Topbar({ onMenuClick }) {
               </span>
             </button>
           )}
+
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl hover:bg-white/10 text-gray-400"
+            title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          >
+            {theme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+          </button>
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-accent-600 flex items-center justify-center text-white text-xs font-bold">

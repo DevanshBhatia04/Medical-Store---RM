@@ -19,7 +19,7 @@ export const formatDateTime = (date) => {
 }
 
 export const daysUntilExpiry = (date) => {
-  if (!date) return { label: '-', status: 'normal' }
+  if (!date) return { days: 0, status: 'unknown' }
   const now = new Date()
   now.setHours(0, 0, 0, 0)
   const expiry = new Date(date)
