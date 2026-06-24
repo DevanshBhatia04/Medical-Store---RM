@@ -103,22 +103,15 @@ export default function Billing() {
     try {
       const payload = {
         items: cart.map((item) => ({
-          product: item._id,
-          productName: item.name,
+          productId: item.id,
           qty: item.qty,
-          sellingPrice: item.sellingPrice,
-          gst: item.gst || 0,
-          mrp: item.mrp || 0,
-          batchNo: item.batchNo || '',
-          expiryDate: item.expiryDate || '',
+          price: item.sellingPrice || 0,
+          gstPercent: item.gstPercent || 12,
         })),
         customerName: customerName || 'Walk-in',
         customerPhone: customerPhone || '',
         paymentMode,
-        discount: discountAmount,
-        subtotal,
-        gstTotal,
-        grandTotal,
+        discountAmount: discountAmount,
       }
       const invoice = await createInvoice(payload)
       setGeneratedInvoice(invoice.invoice || invoice)

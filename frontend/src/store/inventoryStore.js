@@ -25,11 +25,11 @@ export const useInventoryStore = create((set) => ({
 
   addToCart: (product) =>
     set((state) => {
-      const existing = state.cart.find((item) => item._id === product._id)
+      const existing = state.cart.find((item) => item.id === product.id)
       if (existing) {
         return {
           cart: state.cart.map((item) =>
-            item._id === product._id
+            item.id === product.id
               ? { ...item, qty: item.qty + 1 }
               : item
           ),
@@ -40,13 +40,13 @@ export const useInventoryStore = create((set) => ({
 
   removeFromCart: (productId) =>
     set((state) => ({
-      cart: state.cart.filter((item) => item._id !== productId),
+      cart: state.cart.filter((item) => item.id !== productId),
     })),
 
   updateCartQty: (productId, qty) =>
     set((state) => ({
       cart: state.cart.map((item) =>
-        item._id === productId ? { ...item, qty: Math.max(0, qty) } : item
+        item.id === productId ? { ...item, qty: Math.max(0, qty) } : item
       ),
     })),
 
