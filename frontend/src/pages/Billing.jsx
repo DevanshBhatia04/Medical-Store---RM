@@ -27,6 +27,15 @@ export default function Billing() {
   const barcodeInputRef = useRef(null)
   const cameraInputRef = useRef(null)
 
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const searchTimeout = useRef(null)
 
   const handleSearch = useCallback(async (query) => {
@@ -176,23 +185,15 @@ export default function Billing() {
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
-                    placeholder="Search products by name..."
+                    placeholder="Search products..."
                     className="input-glass pl-10"
                     autoComplete="off"
                   />
                 </div>
-                <input
-                  ref={barcodeInputRef}
-                  type="text"
-                  onKeyDown={handleBarcodeScan}
-                  placeholder="Scan barcode..."
-                  className="input-glass w-36 hidden sm:block"
-                  autoComplete="off"
-                />
                 <button
                   type="button"
                   onClick={handleCameraClick}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200"
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 shrink-0"
                   title="Scan with camera"
                 >
                   <IconCamera size={20} />
@@ -207,28 +208,46 @@ export default function Billing() {
                   onChange={() => barcodeInputRef.current?.focus()}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2">Search by name or scan barcode. Tap <IconCamera size={12} className="inline" /> to use camera on mobile.</p>
+              <div className="flex items-center gap-2">
+                <input
+                  ref={barcodeInputRef}
+                  type="text"
+                  onKeyDown={handleBarcodeScan}
+                  placeholder="Scan barcode..."
+                  className="input-glass flex-1 text-sm"
+                  autoComplete="off"
+                />
+              </div>
               {showDropdown && searchResults.length > 0 && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute z-50 left-0 right-0 mt-2 glass rounded-xl max-h-60 overflow-y-auto"
-                >
-                  {searchResults.map((product) => (
+                <>
+                  {isMobile && (
+                    <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+                  )}
+                  <div
+                    ref={dropdownRef}
+                    className={`${isMobile ? 'fixed z-50 left-4 right-4 top-20 max-h-[60vh]' : 'absolute z-50 left-0 right-0 mt-2'} glass rounded-xl overflow-y-auto shadow-xl`}
+                  >
+                    <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                      <span className="text-xs text-gray-400">{searchResults.length} products found</span>
+                      <button onClick={() => setShowDropdown(false)} className="text-gray-400 hover:text-gray-200 text-sm">✕</button>
+                    </div>
+                    {searchResults.map((product) => (
                       <button
                         key={product.id}
                         onClick={() => selectProduct(product)}
                         className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 text-left border-b border-white/5 last:border-0"
                       >
-                        <div>
-                          <p className="text-sm text-gray-200 font-medium">{product.name}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-200 font-medium truncate">{product.name}</p>
                           <p className="text-xs text-gray-500">
                             Stock: {product.currentStock || product.stock || 0} | ₹{product.sellingPrice || 0}
                           </p>
                         </div>
-                        <IconPlus size={16} className="text-primary-400 shrink-0" />
+                        <IconPlus size={16} className="text-primary-400 shrink-0 ml-2" />
                       </button>
                     ))}
-                </div>
+                  </div>
+                </>
               )}
               {searching && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
