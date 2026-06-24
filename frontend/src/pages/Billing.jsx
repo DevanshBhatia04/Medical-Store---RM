@@ -98,7 +98,7 @@ export default function Billing() {
 
   const subtotal = cart.reduce((sum, item) => sum + (item.sellingPrice || 0) * item.qty, 0)
   const gstTotal = cart.reduce(
-    (sum, item) => sum + ((item.sellingPrice || 0) * item.qty * (item.gst || 0)) / 100,
+    (sum, item) => sum + ((item.sellingPrice || 0) * item.qty * (item.gstPercent || item.gst || 0)) / 100,
     0
   )
   const discountAmount = (subtotal * discount) / 100
@@ -166,7 +166,7 @@ export default function Billing() {
 
       <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
         <div className="flex-1 flex flex-col gap-4 min-h-0">
-          <div className="glass rounded-2xl p-4 space-y-3 overflow-visible">
+          <div className="glass rounded-2xl p-4 space-y-3 overflow-visible shrink-0">
             <div className="relative" ref={searchRef}>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -214,20 +214,20 @@ export default function Billing() {
                   className="absolute z-50 left-0 right-0 mt-2 glass rounded-xl max-h-60 overflow-y-auto"
                 >
                   {searchResults.map((product) => (
-                    <button
-                      key={product._id}
-                      onClick={() => selectProduct(product)}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 text-left border-b border-white/5 last:border-0"
-                    >
-                      <div>
-                        <p className="text-sm text-gray-200 font-medium">{product.name}</p>
-                        <p className="text-xs text-gray-500">
-                          Stock: {product.stock || 0} | ₹{product.sellingPrice || 0}
-                        </p>
-                      </div>
-                      <IconPlus size={16} className="text-primary-400 shrink-0" />
-                    </button>
-                  ))}
+                      <button
+                        key={product.id}
+                        onClick={() => selectProduct(product)}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 text-left border-b border-white/5 last:border-0"
+                      >
+                        <div>
+                          <p className="text-sm text-gray-200 font-medium">{product.name}</p>
+                          <p className="text-xs text-gray-500">
+                            Stock: {product.currentStock || product.stock || 0} | ₹{product.sellingPrice || 0}
+                          </p>
+                        </div>
+                        <IconPlus size={16} className="text-primary-400 shrink-0" />
+                      </button>
+                    ))}
                 </div>
               )}
               {searching && (
@@ -238,7 +238,7 @@ export default function Billing() {
             </div>
           </div>
 
-          <div className="flex-1 glass rounded-2xl p-4 overflow-y-auto">
+          <div className="flex-1 glass rounded-2xl p-4 overflow-y-auto min-h-0">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
                 <IconShoppingCart size={48} className="mb-3 opacity-30" />
@@ -259,10 +259,10 @@ export default function Billing() {
                   </thead>
                   <tbody>
                     {cart.map((item) => {
-                      const maxQty = item.stock || 999
+                      const maxQty = item.currentStock || item.stock || 999
                       const total = (item.sellingPrice || 0) * item.qty
                       return (
-                        <tr key={item._id} className="border-b border-white/5">
+                        <tr key={item.id} className="border-b border-white/5">
                           <td className="px-3 py-2">
                             <p className="text-gray-200">{item.name}</p>
                             {item.qty > maxQty && (
@@ -272,14 +272,14 @@ export default function Billing() {
                           <td className="px-3 py-2">
                             <div className="flex items-center justify-center gap-1">
                               <button
-                                onClick={() => item.qty > 1 && updateCartQty(item._id, item.qty - 1)}
+                                onClick={() => item.qty > 1 && updateCartQty(item.id, item.qty - 1)}
                                 className="w-6 h-6 rounded bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-xs"
                               >
                                 -
                               </button>
                               <span className="w-8 text-center text-gray-200 text-sm">{item.qty}</span>
                               <button
-                                onClick={() => item.qty < maxQty && updateCartQty(item._id, item.qty + 1)}
+                                onClick={() => item.qty < maxQty && updateCartQty(item.id, item.qty + 1)}
                                 className="w-6 h-6 rounded bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center text-xs"
                               >
                                 +
@@ -294,7 +294,7 @@ export default function Billing() {
                           </td>
                           <td className="px-3 py-2 text-center">
                             <button
-                              onClick={() => removeFromCart(item._id)}
+                              onClick={() => removeFromCart(item.id)}
                               className="p-1 rounded hover:bg-red-500/10 text-red-400"
                             >
                               <IconTrash size={14} />
