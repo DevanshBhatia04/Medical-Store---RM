@@ -15,8 +15,8 @@ import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 
 function ProtectedRoute() {
-  const { isAuthenticated } = useAuthStore()
-  if (!isAuthenticated) {
+  const token = localStorage.getItem('medstore_token')
+  if (!token) {
     return <Navigate to="/login" replace />
   }
   return <Outlet />

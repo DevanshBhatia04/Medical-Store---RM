@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -14,7 +13,6 @@ const schema = z.object({
 })
 
 export default function Login() {
-  const navigate = useNavigate()
   const { login } = useAuthStore()
   const [loading, setLoading] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
@@ -30,8 +28,7 @@ export default function Login() {
     try {
       const res = await loginApi(data.email, data.password)
       login(res.user || res, res.token)
-      toast.success('Login successful')
-      navigate('/dashboard')
+      window.location.href = '/dashboard'
     } catch (err) {
       toast.error(err.message || 'Login failed')
     } finally {
