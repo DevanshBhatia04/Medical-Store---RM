@@ -21,6 +21,20 @@ const { startOosJob } = require('./jobs/oosJob');
 const prisma = new PrismaClient();
 const app = express();
 
+async function autoSeed() {
+  try {
+    const admin = await prisma.user.findUnique({ where: { email: 'admin@store.com' } });
+    if (!admin) {
+      console.log('[SEED] No data found, running auto-seed...');
+      require('../prisma/seed');
+    } else {
+      console.log('[SEED] Data already exists, skipping seed');
+    }
+  } catch (e) {
+    console.log('[SEED] Check error (table may not exist yet):', e.message);
+  }
+}
+
 const PORT = parseInt(process.env.PORT) || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
